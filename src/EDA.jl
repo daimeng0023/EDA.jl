@@ -1,5 +1,8 @@
 module EDA
 
-greet() = print("Hello World!")
+include("parser.jl")
+
+export
+    parse_file
 
 end # module
