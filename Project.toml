@@ -1,0 +1,10 @@
+name = "EDA"
+uuid = "f9e4e1e9-5197-5cb8-9300-f1e724bd4b51"
+authors = ["Daimeng Shi <daimeng.shi@student.adelaide.edu.au>"]
+version = "0.1.0"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
