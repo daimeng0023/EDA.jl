@@ -1,3 +1,2 @@
 using EDA
-
-parse_file()
+launch()

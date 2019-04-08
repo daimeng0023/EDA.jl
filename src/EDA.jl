@@ -1,9 +1,18 @@
 module EDA
 
-#include("parser.jl")
+using CImGui
+using CImGui.CSyntax
+using CImGui.CSyntax.CStatic
+using CImGui.GLFWBackend
+using CImGui.OpenGLBackend
+using CImGui.GLFWBackend.GLFW
+using CImGui.OpenGLBackend.ModernGL
+using Printf
+
 include("new_GUI.jl")
 
 export
-    parse_file
+    parse_file,
+    launch
 
 end # module
