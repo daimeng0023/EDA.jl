@@ -3,6 +3,11 @@ uuid = "f9e4e1e9-5197-5cb8-9300-f1e724bd4b51"
 authors = ["Daimeng Shi <daimeng.shi@student.adelaide.edu.au>"]
 version = "0.1.0"
 
+[deps]
+CImGui = "5d785b6c-b76f-510e-a07c-3070796c7e87"
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+TableReader = "70df011a-6618-58d7-8e16-3cf9e384cb47"
+
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
