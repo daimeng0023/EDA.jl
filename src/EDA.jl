@@ -1,7 +1,7 @@
 module EDA
 
 #include("parser.jl")
-include("GUI.jl")
+include("new_GUI.jl")
 
 export
     parse_file
