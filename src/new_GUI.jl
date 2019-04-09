@@ -75,14 +75,18 @@ function launch()
         # EDA_window && @c ShowDemoWindow(&EDA_window)
 
         begin
-        CImGui.Begin("Menu")
-        CImGui.Text("Please select files that you want to Analysis.")
-        # @c CImGui.Checkbox("Default files",&Default_files)
-        # @c CImGui.SliderFloat("float", &f, 0, 1)
-        # CImGui.AddImage()
-        CImGui.Text("Please select files that you want to Analysis.")
-        CImGui.Button("Open files") # && CSV.read("F:\\julia\\CSV\\EDA.csv")
-        CImGui.End()
+            CImGui.Begin("Menu")
+            CImGui.Text("Please select files that you want to Analysis.")
+            # @c CImGui.Checkbox("Default files",&Default_files)
+            # @c CImGui.SliderFloat("float", &f, 0, 1)
+
+            if CImGui.Button("Open files")
+                df = readtable("F:\\julia\\CSV\\EDA.csv")
+                # && df = CSV.read("F:\\julia\\CSV\\EDA.csv")
+                p = plot(df, x= :x4, y = :x4, Geom.point)
+                CImGui.Text("Done.")
+            end
+            CImGui.End()
         end
 
         # show a simple window that we create ourselves.
