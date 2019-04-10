@@ -64,6 +64,7 @@ function launch()
     # f = Cfloat(0.0)
     # Default_files = false
     Open_files = false
+    # @c CImGui.Combo("combo", &item_current, items, length(items))
     while !GLFW.WindowShouldClose(window)
         GLFW.PollEvents()
         # start the Dear ImGui frame
@@ -86,7 +87,10 @@ function launch()
                 # df = readtable("F:\\julia\\CSV\\EDA.csv")
                 # df = CSV.read("F:\\julia\\CSV\\EDA.csv")
                 df = CSV.read("F:\\julia\\CSV\\EDA.csv")
-                p = plot(df, x= 1, y = 1, Geom.point, Geom.line)
+                # p = plot(df, x= 1, y = 1, Geom.point, Geom.line)
+                start_time = view(df, 1, 1)
+                frequence = view(df, 2, 1)
+                deleterows!(df, 1)
                 # color=:Species,
                 #img = SVG("sample_plot.svg", 14cm, 8cm)
                 #draw(img, p)
@@ -94,7 +98,10 @@ function launch()
 
                 animate, _ = @cstatic animate=true arr=Cfloat[0.6, 0.1, 1.0, 0.5, 0.92, 0.1, 0.2] begin
                     @c CImGui.Checkbox("Animate", &animate)
-                    CImGui.PlotLines("Frame Times", arr, length(arr))
+                    # data = view(df, 1)
+                    data = convert(Matrix, df)
+                    CImGui.PlotLines("Result", data, length(data))
+                    # convert(Matrix, df)
                     # create a dummy array of contiguous float values to plot
                     # Tip: If your float aren't contiguous but part of a structure, you can pass a pointer to your first float and the sizeof() of your structure in the Stride parameter.
                     @cstatic values=fill(Cfloat(0),90) values_offset=Cint(0) refresh_time=Cdouble(0) begin
@@ -109,7 +116,7 @@ function launch()
                             end
                         end
                         CImGui.PlotLines("Lines", values, length(values), values_offset, "avg 0.0", -1.0, 1.0, (0,80))
-                        CImGui.PlotHistogram("Histogram", arr, length(arr), 0, C_NULL, 0.0, 1.0, (0,80))
+                        #CImGui.PlotHistogram("Histogram", arr, length(arr), 0, C_NULL, 0.0, 1.0, (0,80))
                     end
                 end # @cstatic
                 # use functions to generate output
@@ -128,27 +135,27 @@ function launch()
                     @c CImGui.SliderInt("Sample count", &display_count, 1, 400)
                     func = func_type == 0 ? Sin_ptr : Saw_ptr
                     CImGui.PlotLines("Lines", func, C_NULL, display_count, 0, C_NULL, -1.0, 1.0, (0,80))
-                    CImGui.PlotHistogram("Histogram", func, C_NULL, display_count, 0, C_NULL, -1.0, 1.0, (0,80))
-                    CImGui.Separator()
+                    #CImGui.PlotHistogram("Histogram", func, C_NULL, display_count, 0, C_NULL, -1.0, 1.0, (0,80))
+                    # CImGui.Separator()
                 end
 
                 # animate a simple progress bar
-                @cstatic progress=Cfloat(0) progress_dir=Cfloat(1) begin
-                    if animate
-                        progress += progress_dir * 0.4 * CImGui.GetIO().DeltaTime
-                        progress ≥ 1.1 && (progress = 1.1; progress_dir *= -1.0;)
-                        progress ≤ -0.1 && (progress = -0.1; progress_dir *= -1.0;)
-                    end
+                # @cstatic progress=Cfloat(0) progress_dir=Cfloat(1) begin
+                    # if animate
+                    #    progress += progress_dir * 0.4 * CImGui.GetIO().DeltaTime
+                    #    progress ≥ 1.1 && (progress = 1.1; progress_dir *= -1.0;)
+                    #    progress ≤ -0.1 && (progress = -0.1; progress_dir *= -1.0;)
+                    # end
 
                     # typically we would use ImVec2(-1.0,0.0) to use all available width, or ImVec2(width,0.0) for a specified width. ImVec2(0.0,0.0) uses ItemWidth.
-                    CImGui.ProgressBar(progress, ImVec2(0.0,0.0))
-                    CImGui.SameLine(0.0, CImGui.GetStyle().ItemInnerSpacing.x)
-                    CImGui.Text("Progress Bar")
+                    # CImGui.ProgressBar(progress, ImVec2(0.0,0.0))
+                    # CImGui.SameLine(0.0, CImGui.GetStyle().ItemInnerSpacing.x)
+                    # CImGui.Text("Progress Bar")
 
-                    progress_saturated = (progress < 0.0) ? 0.0 : (progress > 1.0) ? 1.0 : progress
-                    buf = @sprintf("%d/%d", progress_saturated*1753, 1753)
-                    CImGui.ProgressBar(progress, ImVec2(0,0), buf)
-                end
+                    # progress_saturated = (progress < 0.0) ? 0.0 : (progress > 1.0) ? 1.0 : progress
+                    # buf = @sprintf("%d/%d", progress_saturated*1753, 1753)
+                    # CImGui.ProgressBar(progress, ImVec2(0,0), buf)
+                # end
             end
             CImGui.End()
         end
