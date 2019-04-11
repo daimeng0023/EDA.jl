@@ -86,11 +86,16 @@ function launch()
             if Open_files
                 # df = readtable("F:\\julia\\CSV\\EDA.csv")
                 # df = CSV.read("F:\\julia\\CSV\\EDA.csv")
-                df = CSV.read("F:\\julia\\CSV\\EDA.csv")
+                df = CSV.read("F:\\julia\\CSV\\EDA.csv", header = ["EDA"])
+                #Base.display(df)
+                data = Cfloat.(df[3:end,1])
+                #@show typeof(data)
+                #data₂ = map(x -> Cfloat(x), data)
+
                 # p = plot(df, x= 1, y = 1, Geom.point, Geom.line)
-                start_time = view(df, 1, 1)
-                frequence = view(df, 2, 1)
-                deleterows!(df, 1)
+                start_time = df[1,1]
+                frequency = df[2,1]
+                #deleterows!(df, 1)
                 # color=:Species,
                 #img = SVG("sample_plot.svg", 14cm, 8cm)
                 #draw(img, p)
@@ -99,8 +104,13 @@ function launch()
                 animate, _ = @cstatic animate=true arr=Cfloat[0.6, 0.1, 1.0, 0.5, 0.92, 0.1, 0.2] begin
                     @c CImGui.Checkbox("Animate", &animate)
                     # data = view(df, 1)
-                    data = convert(Matrix, df)
+                    # data = convert(Matrix, df)
+                    #data = transpose(Matrix(df))
+                    #data = convert(Array,data)
+                    # CImGui.PlotLines("Result", data, length(data))
                     CImGui.PlotLines("Result", data, length(data))
+                    #@show typeof(data)
+                    #@show typeof(Cfloat)
                     # convert(Matrix, df)
                     # create a dummy array of contiguous float values to plot
                     # Tip: If your float aren't contiguous but part of a structure, you can pass a pointer to your first float and the sizeof() of your structure in the Stride parameter.
