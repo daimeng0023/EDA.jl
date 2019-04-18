@@ -64,6 +64,7 @@ function launch()
     # f = Cfloat(0.0)
     # Default_files = false
     Open_files = false
+    #scene = Scene()
     # @c CImGui.Combo("combo", &item_current, items, length(items))
     while !GLFW.WindowShouldClose(window)
         GLFW.PollEvents()
@@ -93,61 +94,129 @@ function launch()
                 #data₂ = map(x -> Cfloat(x), data)
 
                 # p = plot(df, x= 1, y = 1, Geom.point, Geom.line)
-                start_time = df[1,1]
-                frequency = df[2,1]
+                #st is the start time
+                #freq is the frequency
+                st = df[1,1]
+                freq = df[2,1]
+                CImGui.PlotLines("Result", data, length(data))
+
+
+                CImGui.Text("Primitives")
+                    sz, thickness, col = @cstatic sz=Cfloat(36.0) thickness=Cfloat(4.0) col=Cfloat[1.0,0.0,0.4,0.2] begin
+                        @c CImGui.DragFloat("Size", &sz, 0.2, 2.0, 72.0, "%.0f")
+                        @c CImGui.DragFloat("Thickness", &thickness, 0.05, 1.0, 8.0, "%.02f")
+                        CImGui.ColorEdit4("Color", col)
+                    end
+                    p = CImGui.GetCursorScreenPos()
+                    col32 = CImGui.ColorConvertFloat4ToU32(ImVec4(col...))
+
+                    begin
+                        width = 1000
+                        height = 200
+                        CImGui.PlotLines("EDA Measurements", data, length(data), 0 , "EDA", 0, 1.0, (width,height))
+                        draw_list = CImGui.GetWindowDrawList()
+                        #x::Cfloat = p.x + 4.0
+                        #y::Cfloat = p.y + 4.0
+                        x::Cfloat = p.x
+                        y::Cfloat = p.y
+                        spacing = 8.0
+                        # Draws (almost transparent) horizontal bars
+                        for yₙ in range(y, step = 40, stop = y + height - 40)
+                            CImGui.AddRectFilled(draw_list, ImVec2(x, yₙ), ImVec2(x+width, yₙ+20), col32);
+                        end
+                    end
+
+                    #draw the x axis
+                    begin
+                        p = CImGui.GetCursorScreenPos()
+                        width = 1000
+                        col = Cfloat[0.0,0.0,0.0,1.0]
+                        col32 = CImGui.ColorConvertFloat4ToU32(ImVec4(col...))
+                        draw_list = CImGui.GetWindowDrawList()
+                        x = p.x
+                        y = p.y
+
+                        CImGui.AddLine(draw_list, ImVec2(x, y), ImVec2(x+width, y), col32, Cfloat(1));
+                        for xₙ in range(x, step = 40, stop = x + width)
+                            CImGui.AddLine(draw_list, ImVec2(xₙ, y), ImVec2(xₙ, y-5), col32, Cfloat(1));
+                        end
+                        #for xₙ in range(x+10, step = 40, stop = x+10 + width)
+                        #    CImGui.Text(st+1/freq)
+                        #end
+                    end
+
+
+                    #date = Dates.unix2datetime(ts)
+
+                    #day(date)
+                    #month(date)
+                    #year(date)
+                    #hour(date)
+                    #minute(date)
+                    #second(date)
+                    #millisecond(date)
+                #x = range(0, stop = 2pi, length = 80)
+                #f1(x) = sin.(x)
+                #f2(x) = exp.(-x) .* cos.(2pi*x)
+                #y1 = f1(x)
+                #y2 = f2(x)
+
+                #scene = lines(x, y1, color = :blue)
+                #scatter!(scene, x, y1, color = :red, markersize = 0.1)
+
                 #deleterows!(df, 1)
                 # color=:Species,
                 #img = SVG("sample_plot.svg", 14cm, 8cm)
                 #draw(img, p)
                 #CImGui.Text("Done.")
 
-                animate, _ = @cstatic animate=true arr=Cfloat[0.6, 0.1, 1.0, 0.5, 0.92, 0.1, 0.2] begin
-                    @c CImGui.Checkbox("Animate", &animate)
+                #animate, _ = @cstatic animate=true arr=Cfloat[0.6, 0.1, 1.0, 0.5, 0.92, 0.1, 0.2] begin
+                    #@c CImGui.Checkbox("Animate", &animate)
                     # data = view(df, 1)
                     # data = convert(Matrix, df)
                     #data = transpose(Matrix(df))
                     #data = convert(Array,data)
                     # CImGui.PlotLines("Result", data, length(data))
-                    CImGui.PlotLines("Result", data, length(data))
+
                     #@show typeof(data)
                     #@show typeof(Cfloat)
                     # convert(Matrix, df)
                     # create a dummy array of contiguous float values to plot
                     # Tip: If your float aren't contiguous but part of a structure, you can pass a pointer to your first float and the sizeof() of your structure in the Stride parameter.
-                    @cstatic values=fill(Cfloat(0),90) values_offset=Cint(0) refresh_time=Cdouble(0) begin
-                        (!animate || refresh_time == 0.0) && (refresh_time = CImGui.GetTime();)
+                    #@cstatic values=fill(Cfloat(0),90) values_offset=Cint(0) refresh_time=Cdouble(0) begin
+                    #    (!animate || refresh_time == 0.0) && (refresh_time = CImGui.GetTime();)
 
-                        while refresh_time < CImGui.GetTime() # create dummy data at fixed 60 hz rate for the demo
-                            @cstatic phase=Cfloat(0) begin
-                                values[values_offset+1] = cos(phase)
-                                values_offset = (values_offset+1) % length(values)
-                                phase += 0.10*values_offset
-                                refresh_time += 1.0/60.0
-                            end
-                        end
-                        CImGui.PlotLines("Lines", values, length(values), values_offset, "avg 0.0", -1.0, 1.0, (0,80))
+                    #    while refresh_time < CImGui.GetTime() # create dummy data at fixed 60 hz rate for the demo
+                    #        @cstatic phase=Cfloat(0) begin
+                    #            values[values_offset+1] = cos(phase)
+                    #            values_offset = (values_offset+1) % length(values)
+                    #            phase += 0.10*values_offset
+                    #            refresh_time += 1.0/60.0
+                    #        end
+                    #    end
+                    #    CImGui.PlotLines("Lines", values, length(values), values_offset, "avg 0.0", -1.0, 1.0, (0,80))
                         #CImGui.PlotHistogram("Histogram", arr, length(arr), 0, C_NULL, 0.0, 1.0, (0,80))
-                    end
-                end # @cstatic
+                    #end
+                #end # @cstatic
                 # use functions to generate output
                 # FIXME: This is rather awkward because current plot API only pass in indices. We probably want an API passing floats and user provide sample rate/count.
-                Sin(::Ptr{Cvoid}, i::Cint) = Cfloat(sin(i * 0.1))
-                Saw(::Ptr{Cvoid}, i::Cint) = Cfloat((i & 1) != 0 ? 1.0 : -1.0)
-                Sin_ptr = @cfunction($Sin, Cfloat, (Ptr{Cvoid}, Cint))
-                Saw_ptr = @cfunction($Saw, Cfloat, (Ptr{Cvoid}, Cint))
+                #Sin(::Ptr{Cvoid}, i::Cint) = Cfloat(sin(i * 0.1))
+                #Saw(::Ptr{Cvoid}, i::Cint) = Cfloat((i & 1) != 0 ? 1.0 : -1.0)
+                #Sin_ptr = @cfunction($Sin, Cfloat, (Ptr{Cvoid}, Cint))
+                #Saw_ptr = @cfunction($Saw, Cfloat, (Ptr{Cvoid}, Cint))
 
-                @cstatic func_type=Cint(0) display_count=Cint(70) begin
-                    CImGui.Separator()
-                    CImGui.PushItemWidth(100)
-                    @c CImGui.Combo("func", &func_type, "Sin\0Saw\0")
-                    CImGui.PopItemWidth()
-                    CImGui.SameLine()
-                    @c CImGui.SliderInt("Sample count", &display_count, 1, 400)
-                    func = func_type == 0 ? Sin_ptr : Saw_ptr
-                    CImGui.PlotLines("Lines", func, C_NULL, display_count, 0, C_NULL, -1.0, 1.0, (0,80))
+                #@cstatic func_type=Cint(0) display_count=Cint(70) begin
+                #    CImGui.Separator()
+                #    CImGui.PushItemWidth(100)
+                #    @c CImGui.Combo("func", &func_type, "Sin\0Saw\0")
+                #    CImGui.PopItemWidth()
+                #    CImGui.SameLine()
+                #    @c CImGui.SliderInt("Sample count", &display_count, 1, 400)
+                #    func = func_type == 0 ? Sin_ptr : Saw_ptr
+                #    CImGui.PlotLines("Lines", func, C_NULL, display_count, 0, C_NULL, -1.0, 1.0, (0,80))
                     #CImGui.PlotHistogram("Histogram", func, C_NULL, display_count, 0, C_NULL, -1.0, 1.0, (0,80))
                     # CImGui.Separator()
-                end
+                #end
 
                 # animate a simple progress bar
                 # @cstatic progress=Cfloat(0) progress_dir=Cfloat(1) begin
