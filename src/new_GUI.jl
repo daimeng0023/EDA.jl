@@ -135,13 +135,29 @@ function launch()
                         draw_list = CImGui.GetWindowDrawList()
                         x = p.x
                         y = p.y
+                        #CImGui.display(typeof(p))
 
+                        time = Dates.unix2datetime(st)
+                        #min = minute(time)
+                        #sec = second(time)
+                        f = Cfloat(1 / freq)
                         CImGui.AddLine(draw_list, ImVec2(x, y), ImVec2(x+width, y), col32, Cfloat(1));
                         for xₙ in range(x, step = 40, stop = x + width)
                             CImGui.AddLine(draw_list, ImVec2(xₙ, y), ImVec2(xₙ, y-5), col32, Cfloat(1));
+                            #p.x = xₙ;
+                            min = minute(time);
+                            sec = second(time);
+                            mil = millisecond(time);
+                            if mil ==0
+                                CImGui.AddText(draw_list, ImVec2(xₙ, y), col32, string(string(min), ":", string(sec)));
+                            end
+                            next_time = time + Dates.Millisecond(250);
+                            time = next_time;
                         end
-                        #for xₙ in range(x+10, step = 40, stop = x+10 + width)
-                        #    CImGui.Text(st+1/freq)
+
+                        #for xₙ in range(x, step = 40, stop = x + width)
+                            #CImGui.Text(Dates.DateTime(date))
+
                         #end
                     end
 
