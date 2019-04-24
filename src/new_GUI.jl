@@ -67,11 +67,15 @@ function launch()
             @c CImGui.Checkbox("Open files", &Open_files)
             if Open_files
                 df = CSV.read("F:\\julia\\CSV\\EDA1.csv", header = ["EDA"])
-                start_time, end_time = @cstatic start_time=Cint(1) end_time=Cint(27730) begin
-                    @c CImGui.SliderInt("Start Time", &start_time, 1,27730)
-                    @c CImGui.SliderInt("End Time", &end_time, 1,27730)
+                #length = size(df,1)-2
+                len = size(df,1)-2
+                #@show typeof(len)
+                start_time, end_time = @cstatic start_time=Cint(1) end_time=Cint(1) begin
+                    @c CImGui.SliderInt("Start Time", &start_time, 1,len)
+                    @c CImGui.SliderInt("End Time", &end_time, 1,len)
                     if start_time > end_time
                         end_time = start_time
+                        start_time = end_time
                     end
                 end
                 #@cstatic length = Cint(size(df, 1) - 2)
