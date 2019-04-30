@@ -73,9 +73,10 @@ function launch()
                 start_time, end_time = @cstatic start_time=Cint(1) end_time=Cint(1) begin
                     @c CImGui.SliderInt("Start Time", &start_time, 1,len)
                     @c CImGui.SliderInt("End Time", &end_time, 1,len)
-                    if start_time > end_time
-                        end_time = start_time
-                        start_time = end_time
+                    if start_time > end_time -1
+                        start_time = end_time - Cint(1)
+                    elseif start_time < end_time - 7000
+                        start_time = end_time - Cint(7000)
                     end
                 end
                 #@cstatic length = Cint(size(df, 1) - 2)
@@ -98,7 +99,7 @@ function launch()
                     col32 = CImGui.ColorConvertFloat4ToU32(ImVec4(col...))
 
                     begin
-                        width = 1000
+                        width = 1200
                         height = 200
                         CImGui.PlotLines("EDA Measurements", data, length(data), 0 , "EDA", 0, 1.0, (width,height))
                         draw_list = CImGui.GetWindowDrawList()
@@ -114,7 +115,7 @@ function launch()
                     #draw the x axis
                     p = CImGui.GetCursorScreenPos()
                     begin
-                        width = 1000
+                        width = 1200
                         col = Cfloat[0.0,0.0,0.0,1.0]
                         col32 = CImGui.ColorConvertFloat4ToU32(ImVec4(col...))
                         draw_list = CImGui.GetWindowDrawList()
@@ -122,16 +123,21 @@ function launch()
                         y = p.y
                         #CImGui.display(typeof(p))
 
-                        time = Dates.unix2datetime(st)
+                        time = Dates.unix2datetime(st+ (start_time-1)/freq)
                         f = Cfloat(1 / freq)
                         CImGui.AddLine(draw_list, ImVec2(x, y), ImVec2(x+width, y), col32, Cfloat(1));
-                        for xₙ in range(x, step = 40, stop = x + width)
-                            CImGui.AddLine(draw_list, ImVec2(xₙ, y), ImVec2(xₙ, y-5), col32, Cfloat(1));
+                        for xₙ in range(x, step = 1200/ (end_time-start_time+1), stop = x + width)
+                            hou = hour(time);
                             min = minute(time);
                             sec = second(time);
                             mil = millisecond(time);
-                            if mil ==0
-                                CImGui.AddText(draw_list, ImVec2(xₙ, y), col32, string(string(min), ":", string(sec)));
+                            if sec ==0 && mil ==0
+                                CImGui.AddLine(draw_list, ImVec2(xₙ, y), ImVec2(xₙ, y-5), col32, Cfloat(1));
+                            end
+                            #if mil ==0
+                            if sec ==0 && mil ==0
+                                #CImGui.AddText(draw_list, ImVec2(xₙ, y), col32, string(string(min), ":", string(sec)));
+                                CImGui.AddText(draw_list, ImVec2(xₙ, y), col32, string(string(hou), ":", string(min)));
                             end
                             next_time = time + Dates.Millisecond(250);
                             time = next_time;
