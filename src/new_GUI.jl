@@ -66,13 +66,17 @@ function launch()
             CImGui.Text("Please select files that you want to Analysis.")
             @c CImGui.Checkbox("Open files", &Open_files)
             if Open_files
-                df = CSV.read("F:\\julia\\CSV\\EDA1.csv", header = ["EDA"])
+                #df = CSV.read("F:\\julia\\CSV\\EDA.csv", header = ["EDA"])
+                df = CSV.read("F:\\julia\\CSV\\HR.csv", header = ["HR"])
+                df_data =sort(Cfloat.(df[3:end,1]))
+                max_value = df_data[end,1]
+                #max = Cfloat(max_value)
                 #length = size(df,1)-2
                 len = size(df,1)-2
                 #@show typeof(len)
-                start_time, end_time = @cstatic start_time=Cint(1) end_time=Cint(1) begin
+                start_time, end_time = @cstatic start_time=Cint(1) end_time=Cint(2) begin
                     @c CImGui.SliderInt("Start Time", &start_time, 1,len)
-                    @c CImGui.SliderInt("End Time", &end_time, 1,len)
+                    @c CImGui.SliderInt("End Time", &end_time, 2,len)
                     if start_time > end_time -1
                         start_time = end_time - Cint(1)
                     elseif start_time < end_time - 7000
@@ -101,7 +105,8 @@ function launch()
                     begin
                         width = 1200
                         height = 200
-                        CImGui.PlotLines("EDA Measurements", data, length(data), 0 , "EDA", 0, 1.0, (width,height))
+
+                        CImGui.PlotLines("EDA Measurements", data, length(data), 0 , "EDA", 0, Cfloat(max_value*1.2), (width,height))
                         draw_list = CImGui.GetWindowDrawList()
                         x::Cfloat = p.x
                         y::Cfloat = p.y
