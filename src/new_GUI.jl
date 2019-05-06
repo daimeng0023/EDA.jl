@@ -66,9 +66,11 @@ function launch()
             CImGui.Text("Please select files that you want to Analysis.")
             @c CImGui.Checkbox("Open files", &Open_files)
             if Open_files
-                #df = CSV.read("F:\\julia\\CSV\\EDA.csv", header = ["EDA"])
-                df = CSV.read("F:\\julia\\CSV\\HR.csv", header = ["HR"])
+                df = CSV.read("F:\\julia\\CSV\\EDA.csv", header = ["EDA"])
+                #df = CSV.read("F:\\julia\\CSV\\HR.csv", header = ["HR"])
                 df_data =sort(Cfloat.(df[3:end,1]))
+                st = df[1,1]
+                freq = df[2,1]
                 max_value = df_data[end,1]
                 #max = Cfloat(max_value)
                 #length = size(df,1)-2
@@ -76,12 +78,24 @@ function launch()
                 #@show typeof(len)
                 start_time, end_time = @cstatic start_time=Cint(1) end_time=Cint(2) begin
                     @c CImGui.SliderInt("Start Time", &start_time, 1,len)
+                    CImGui.SameLine(0.0, CImGui.GetStyle().ItemInnerSpacing.x)
+                    time1 = Dates.unix2datetime(st+ (start_time-1)/freq)
+                    CImGui.Text(string(Time(time1)))
                     @c CImGui.SliderInt("End Time", &end_time, 2,len)
+                    CImGui.SameLine(0.0, CImGui.GetStyle().ItemInnerSpacing.x)
+                    time2 = Dates.unix2datetime(st+ (end_time-1)/freq)
+                    CImGui.Text(string(Time(time2)))
                     if start_time > end_time -1
                         start_time = end_time - Cint(1)
                     elseif start_time < end_time - 7000
                         start_time = end_time - Cint(7000)
                     end
+                    #if end_time < start_time + 1
+                    #    end_time =  start_time + Cint(1)
+                    #elseif end_time > start_time + 7000
+                    #    end_time = start_time + Cint(7000)
+                    #end
+
                 end
                 #@cstatic length = Cint(size(df, 1) - 2)
                 #@show typeof(length)
@@ -92,9 +106,6 @@ function launch()
                 #data = Cfloat.(df[3:end, 1])
 
                 data = Cfloat.(df[(start_time+2):(end_time+2),1])
-                st = df[1,1]
-                freq = df[2,1]
-
                 CImGui.Text("Primitives")
                     sz, thickness, col = @cstatic sz=Cfloat(36.0) thickness=Cfloat(4.0) col=Cfloat[1.0,0.0,0.4,0.2] begin
                         CImGui.ColorEdit4("Color", col)
