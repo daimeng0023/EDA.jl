@@ -53,78 +53,72 @@ function launch()
     # setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true)
     ImGui_ImplOpenGL3_Init(glsl_version)
-
-    # show_demo_window = true
-    # show_another_window = false
-    #
-    # Instantiate variables that are used to control input and output
-    # of various widges.
     clear_color = Cfloat[0.45, 0.55, 0.60, 1.00]
-    # EDA_window = true
-    # f = Cfloat(0.0)
-    # Default_files = false
     Open_files = false
-    #scene = Scene()
-    # @c CImGui.Combo("combo", &item_current, items, length(items))
     while !GLFW.WindowShouldClose(window)
         GLFW.PollEvents()
         # start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame()
         ImGui_ImplGlfw_NewFrame()
         CImGui.NewFrame()
-
-        # show the big demo window
-        # show_demo_window && @c CImGui.ShowDemoWindow(&show_demo_window)
-        # EDA_window && @c ShowDemoWindow(&EDA_window)
-
         begin
             CImGui.Begin("Menu")
             CImGui.Text("Please select files that you want to Analysis.")
-            # @c CImGui.Checkbox("Default files",&Default_files)
-            # @c CImGui.SliderFloat("float", &f, 0, 1)
-
             @c CImGui.Checkbox("Open files", &Open_files)
             if Open_files
-                # df = readtable("F:\\julia\\CSV\\EDA.csv")
-                # df = CSV.read("F:\\julia\\CSV\\EDA.csv")
-                df = CSV.read("F:\\julia\\CSV\\EDA.csv", header = ["EDA"])
-                #Base.display(df)
-                length = Cint(size(df, 1) - 2)
-                @show typeof(length)
-                start_time=Cint(1)
-                @show typeof(start_time)
-                end_time=Cint(length)
-                @show typeof(end_time)
-                #length,start_time,end_time = @cstatic length = Cint(1) start_time=Cint(1) end_time=Cint(1) begin
-                @c CImGui.SliderInt("Start Time", &start_time, 1, length)
-                @c CImGui.SliderInt("End Time", &end_time, 1, length)
-                data = Cfloat.(df[(start_time+2):(end_time+2),1])
-                #@show typeof(data)
-                #data₂ = map(x -> Cfloat(x), data)
-
-                # p = plot(df, x= 1, y = 1, Geom.point, Geom.line)
-                #st is the start time
-                #freq is the frequency
+                #df = CSV.read("F:\\julia\\CSV\\EDA.csv", header = ["EDA"])
+                df = CSV.read("F:\\julia\\CSV\\HR.csv", header = ["HR"])
+                df_data =sort(Cfloat.(df[3:end,1]))
                 st = df[1,1]
                 freq = df[2,1]
-                #CImGui.PlotLines("Result", data, length(data))
+                max_value = df_data[end,1]
+                #max = Cfloat(max_value)
+                #length = size(df,1)-2
+                len = size(df,1)-2
+                #@show typeof(len)
+                start_time, end_time = @cstatic start_time=Cint(1) end_time=Cint(2) begin
+                    @c CImGui.SliderInt("Start Time", &start_time, 1,len)
+                    CImGui.SameLine(0.0, CImGui.GetStyle().ItemInnerSpacing.x)
+                    time1 = Dates.unix2datetime(st+ (start_time-1)/freq)
+                    CImGui.Text(string(Time(time1)))
+                    @c CImGui.SliderInt("End Time", &end_time, 2,len)
+                    CImGui.SameLine(0.0, CImGui.GetStyle().ItemInnerSpacing.x)
+                    time2 = Dates.unix2datetime(st+ (end_time-1)/freq)
+                    CImGui.Text(string(Time(time2)))
+                    if start_time > end_time -1
+                        start_time = end_time - Cint(1)
+                    elseif start_time < end_time - 2000*freq
+                        start_time = end_time - Cint(2000*freq)
+                    end
+                    #if end_time < start_time + 1
+                    #    end_time =  start_time + Cint(1)
+                    #elseif end_time > start_time + 7000
+                    #    end_time = start_time + Cint(7000)
+                    #end
 
+                end
+                #@cstatic length = Cint(size(df, 1) - 2)
+                #@show typeof(length)
+                #@cstatic start_time = Cint(1) end_time = Cint(70) begin
+                #    @c CImGui.SliderInt("Start Time", &start_time, 1, length)
+                #    @c CImGui.SliderInt("End Time", &end_time, 1, length)
+                #end
+                #data = Cfloat.(df[3:end, 1])
+
+                data = Cfloat.(df[(start_time+2):(end_time+2),1])
                 CImGui.Text("Primitives")
                     sz, thickness, col = @cstatic sz=Cfloat(36.0) thickness=Cfloat(4.0) col=Cfloat[1.0,0.0,0.4,0.2] begin
-                        #@c CImGui.DragFloat("Size", &sz, 0.2, 2.0, 72.0, "%.0f")
-                        #@c CImGui.DragFloat("Thickness", &thickness, 0.05, 1.0, 8.0, "%.02f")
                         CImGui.ColorEdit4("Color", col)
                     end
                     p = CImGui.GetCursorScreenPos()
                     col32 = CImGui.ColorConvertFloat4ToU32(ImVec4(col...))
 
                     begin
-                        width = 1000
+                        width = 1200
                         height = 200
-                        CImGui.PlotLines("EDA Measurements", data, length(data), 0 , "EDA", 0, 1.0, (width,height))
+
+                        CImGui.PlotLines("EDA Measurements", data, length(data), 0 , "EDA", 0, Cfloat(max_value*1.2), (width,height))
                         draw_list = CImGui.GetWindowDrawList()
-                        #x::Cfloat = p.x + 4.0
-                        #y::Cfloat = p.y + 4.0
                         x::Cfloat = p.x
                         y::Cfloat = p.y
                         spacing = 8.0
@@ -137,7 +131,7 @@ function launch()
                     #draw the x axis
                     p = CImGui.GetCursorScreenPos()
                     begin
-                        width = 1000
+                        width = 1200
                         col = Cfloat[0.0,0.0,0.0,1.0]
                         col32 = CImGui.ColorConvertFloat4ToU32(ImVec4(col...))
                         draw_list = CImGui.GetWindowDrawList()
@@ -145,28 +139,25 @@ function launch()
                         y = p.y
                         #CImGui.display(typeof(p))
 
-                        time = Dates.unix2datetime(st)
-                        #min = minute(time)
-                        #sec = second(time)
+                        time = Dates.unix2datetime(st+ (start_time-1)/freq)
                         f = Cfloat(1 / freq)
                         CImGui.AddLine(draw_list, ImVec2(x, y), ImVec2(x+width, y), col32, Cfloat(1));
-                        for xₙ in range(x, step = 40, stop = x + width)
-                            CImGui.AddLine(draw_list, ImVec2(xₙ, y), ImVec2(xₙ, y-5), col32, Cfloat(1));
-                            #p.x = xₙ;
+                        for xₙ in range(x, step = 1200/ (end_time-start_time+1), stop = x + width)
+                            hou = hour(time);
                             min = minute(time);
                             sec = second(time);
                             mil = millisecond(time);
-                            if mil ==0
-                                CImGui.AddText(draw_list, ImVec2(xₙ, y), col32, string(string(min), ":", string(sec)));
+                            if sec ==0 && mil ==0
+                                CImGui.AddLine(draw_list, ImVec2(xₙ, y), ImVec2(xₙ, y-5), col32, Cfloat(1));
                             end
-                            next_time = time + Dates.Millisecond(250);
+                            #if mil ==0
+                            if sec ==0 && mil ==0
+                                #CImGui.AddText(draw_list, ImVec2(xₙ, y), col32, string(string(min), ":", string(sec)));
+                                CImGui.AddText(draw_list, ImVec2(xₙ, y), col32, string(string(hou), ":", string(min)));
+                            end
+                            next_time = time + Dates.Millisecond(f*1000);
                             time = next_time;
                         end
-
-                        #for xₙ in range(x, step = 40, stop = x + width)
-                            #CImGui.Text(Dates.DateTime(date))
-
-                        #end
                     end
 
 
@@ -184,15 +175,6 @@ function launch()
                 #f2(x) = exp.(-x) .* cos.(2pi*x)
                 #y1 = f1(x)
                 #y2 = f2(x)
-
-                #scene = lines(x, y1, color = :blue)
-                #scatter!(scene, x, y1, color = :red, markersize = 0.1)
-
-                #deleterows!(df, 1)
-                # color=:Species,
-                #img = SVG("sample_plot.svg", 14cm, 8cm)
-                #draw(img, p)
-                #CImGui.Text("Done.")
 
                 #animate, _ = @cstatic animate=true arr=Cfloat[0.6, 0.1, 1.0, 0.5, 0.92, 0.1, 0.2] begin
                 #    @c CImGui.Checkbox("Animate", &animate)
